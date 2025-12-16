@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رحلتنا - بداية جديدة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ------------------------------------- */
+        /* تصميم CSS (الشكل والألوان ) */
+        /* ------------------------------------- */
+        :root {
+            --primary-color: #FFC0CB;
+            --secondary-color: #4A148C;
+            --background-color: #FFF0F5;
+            --card-background: #FFFFFF;
+            --text-color: #333;
+            --modal-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            text-align: center;
+            overflow-x: hidden;
+        }
+
+        /* --- شاشة القفل --- */
+        #password-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--background-color);
+            z-index: 100;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+        }
+
+        #password-page.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .password-container {
+            background-color: var(--card-background);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 90%;
+            width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--primary-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            margin-bottom: 20px;
+            animation: pop-in 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes pop-in {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        #password-input {
+            padding: 12px 20px;
+            margin: 20px 0;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+            width: 80%;
+            max-width: 300px;
+        }
+
+        #unlock-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        #unlock-button:hover {
+            background-color: #E9967A;
+        }
+
+        /* --- الصفحة الرئيسية --- */
+        #main-page {
+            display: none;
+            padding-top: 80px;
+            padding-bottom: 100px; /* مساحة في الأسفل للزر */
+        }
+
+        /* --- تصميم مشغل الموسيقى الجديد --- */
+        .music-bar {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 25px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid var(--primary-color);
+        }
+
+        .music-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--secondary-color);
+            transition: transform 0.2s;
+        }
+
+        .music-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .music-label {
+            font-weight: bold;
+            color: var(--secondary-color);
+            font-size: 14px;
+        }
+
+        .music-wave {
+            display: flex;
+            align-items: flex-end;
+            height: 20px;
+            gap: 3px;
+        }
+        
+        .bar {
+            width: 4px;
+            background: var(--primary-color);
+            border-radius: 2px;
+            animation: bounce 1s infinite ease-in-out;
+        }
+        .bar:nth-child(2) { animation-delay: 0.1s; height: 60%; }
+        .bar:nth-child(3) { animation-delay: 0.2s; height: 80%; }
+        .paused .bar { animation: none; height: 20%; transition: height 0.3s; }
+
+        @keyframes bounce {
+            0%, 100% { height: 20%; }
+            50% { height: 100%; }
+        }
+
+        /* --- المحتوى --- */
+        .main-container {
+            background-color: var(--card-background);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        
+        .counter {
+            font-size: 24px;
+            margin: 15px 0 25px 0;
+            color: #E91E63;
+            font-weight: 700;
+            background: #ffebee;
+            padding: 15px;
+            border-radius: 15px;
+        }
+
+        #typed-text-container {
+            min-height: 100px;
+            margin-top: 30px;
+            font-size: 18px;
+            line-height: 1.8;
+            color: var(--secondary-color);
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        /* --- الأقسام --- */
+        .content-sections {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .section {
+            background-color: var(--card-background);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+            padding: 25px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .section img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* --- زر المفاجأة في الأسفل --- */
+        .surprise-container {
+            margin: 50px auto;
+            padding: 30px;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .button-surprise {
+            background: linear-gradient(45deg, #FF69B4, #FFC0CB);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 5px 20px rgba(255, 105, 180, 0.4);
+            transition: all 0.3s;
+            animation: pulse 2s infinite;
+        }
+
+        .button-surprise:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 105, 180, 0.6);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- النافذة المنبثقة (Modal) --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* خلفية سوداء شفافة */
+            backdrop-filter: blur(8px); /* تأثير الضباب */
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: #fff0f5;
+            border: 2px solid #FF69B4;
+            padding: 40px;
+            border-radius: 30px;
+            max-width: 90%;
+            width: 500px;
+            position: relative;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            transform: scale(0.7);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #FF69B4;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .close-modal:hover { transform: rotate(90deg); }
+
+        .secret-text {
+            font-size: 20px;
+            line-height: 1.8;
+            color: var(--secondary-color);
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        /* --- القلوب --- */
+        #heart-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            overflow: hidden;
+        }
+        .heart {
+            position: absolute;
+            bottom: -50px;
+            animation: float 5s ease-in forwards;
+            opacity: 0;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+        }
+        @keyframes float {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            20% { opacity: 0.8; }
+            100% { transform: translateY(-100vh) scale(0); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="heart-container"></div>
+
+    <div id="password-page">
+        <div class="password-container">
+            <img src="log.jpg" alt="Profile Picture" class="profile-image">
+            <h1>أهلا أميرتي الجميلة</h1>
+            <p>الباسوورد تاريخ ميلادك</p>
+            <input type="password" id="password-input" placeholder="كلمة المرور">
+            <button id="unlock-button">فتح</button>
+            <p id="error-message" style="color: red; margin-top: 10px; display: none;">كلمة المرور غير صحيحة.</p>
+        </div>
+    </div>
+
+    <div id="main-page">
+        
+        <div class="music-bar">
+            <button class="music-btn" id="toggle-music">►</button>
+            <div class="music-wave paused" id="music-wave">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
+            <span class="music-label">معايا</span>
+            <audio id="background-music" loop preload="auto">
+                <source src="https://serv2.albumaty.com/2025/Albumaty.Com_bhaa_sltan_maaya.mp3" type="audio/mp3">
+            </audio>
+        </div>
+
+        <div class="main-container">
+            <span style="font-size: 40px;">💖</span>
+            <h2>روحي اي كلمة بقولهالك هنا ف هي من كل قلبي</h2>
+            <p>من يوم ما دخلتي حياتي مبقتش عاوز غيرك.</p>
+            <div class="counter" id="love-timer"></div>
+            <div id="typed-text-container">
+                <span id="typed-text"></span><span class="blinking-cursor">|</span>
+            </div>
+            <p style="margin-top: 30px; font-weight: bold; color: #666;">الرحلة لسه طويلة، وكل يوم معاكي بحبك أكتر.</p>
+        </div>
+
+        <div class="content-sections">
+            <div class="section">
+                <img src="LOG2.jpg" alt="صورة القسم الأول">
+                <h3>1/3</h3>
+                <p>أجمل حاجة حصلت من يوم م اتكلمنا ❤️</p>
+            </div>
+            <div class="section">
+                <img src="LOG3.jpg" alt="صورة القسم الثاني">
+                <h3>يوم م اتصورنا اول مرة 😂</h3>
+                <p>كان نفسي تكون الفيديو اللي اتصورناه عند البوابة التانيه كان اول مرة نتصور سوا ❤️</p>
+            </div>
+            <div class="section">
+                <img src="LOG4.jpg" alt="صورة القسم الثالث">
+                <h3>بحب صورتك دي اوي</h3>
+                <p>ومش صورك بس انا بحبك انتي كمان ❤️</p>
+            </div>
+        </div>
+
+        <div class="surprise-container">
+            <p style="font-size: 22px; font-weight: 700; color: #FF69B4; margin-bottom: 15px;">فيه حاجه مهمه اوي عايز اقولهالك</p>
+            <button id="surprise-button" class="button-surprise">اضغطي هنا عشان تعرفيها ✨</button>
+        </div>
+
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" id="close-modal">✖</button>
+            <h3 style="color: #FF69B4; font-size: 24px; margin-bottom: 10px;">لحياتي وروحي</h3>
+            <div style="font-size: 40px;">💌</div>
+            <div class="secret-text">
+                <span id="secret-typed-text"></span><span class="blinking-cursor secret-cursor">|</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // العناصر
+            const passwordPage = document.getElementById('password-page');
+            const mainPage = document.getElementById('main-page');
+            const passwordInput = document.getElementById('password-input');
+            const unlockButton = document.getElementById('unlock-button');
+            const audio = document.getElementById('background-music');
+            const musicBtn = document.getElementById('toggle-music');
+            const musicWave = document.getElementById('music-wave');
+            const modalOverlay = document.getElementById('modal-overlay');
+            const surpriseButton = document.getElementById('surprise-button');
+            const closeModal = document.getElementById('close-modal');
+            
+            // الثوابت
+            const CORRECT_PASSWORD = "2312003";
+            const START_DATE = new Date(2024, 4, 5, 20, 35, 0); 
+            const TYPING_MESSAGE = "من يوم ما عرفتك، قلبي بقى مشتاقلك أكتر من أي حاجة في الدنيا. ما فيش كلام يوصف إحساسي بيكي، أنتي مش بس حبيبتي، أنتي سندي وأماني وكل حاجة حلوة في حياتي. وحشتيني، ومقدرش أزعل منك أبداً. أنا ممتن لربنا على كل لحظة قضيتها معاكي.";
+            const SECRET_MESSAGE = "الحاجه المهمه اللي عايز أقوله هو إني بحبك اوي، وجودك بيخليني مبسوط . أنا مش متخيل حياتي من غيرك دلوقتي، وكل اللي أتمناه هو إن ربنا يجمعنا على خير ونكمل رحلتنا دي سوا للأبد. أنتي فعلاً الشخص اللي استنيته طول عمري. بحبك أكتر مما  تتخيلي 'حبيبك كريم'.";
+
+            // 1. فتح التطبيق وتشغيل الموسيقى
+            function unlockApp() {
+                passwordPage.classList.add('hidden');
+                mainPage.style.display = 'block';
+                
+                // محاولة تشغيل الصوت
+                audio.play().then(() => {
+                    updateMusicIcon(true);
+                }).catch(() => {
+                    console.log("Auto-play prevented");
+                });
+
+                // بدء المؤثرات
+                startTimer();
+                typeWriter();
+                setupScrollAnimation();
+                createHearts();
+            }
+
+            unlockButton.addEventListener('click', () => {
+                if (passwordInput.value === CORRECT_PASSWORD) {
+                    unlockApp();
+                } else {
+                    document.getElementById('error-message').style.display = 'block';
+                }
+            });
+
+            // 2. التحكم في الموسيقى
+            musicBtn.addEventListener('click', () => {
+                if (audio.paused) {
+                    audio.play();
+                    updateMusicIcon(true);
+                } else {
+                    audio.pause();
+                    updateMusicIcon(false);
+                }
+            });
+
+            function updateMusicIcon(isPlaying) {
+                if(isPlaying) {
+                    musicBtn.textContent = '⏸';
+                    musicWave.classList.remove('paused');
+                } else {
+                    musicBtn.textContent = '►';
+                    musicWave.classList.add('paused');
+                }
+            }
+
+            // 3. النافذة المنبثقة (المفاجأة)
+            surpriseButton.addEventListener('click', () => {
+                modalOverlay.classList.add('active');
+                // بدء كتابة الرسالة السرية
+                document.getElementById('secret-typed-text').textContent = '';
+                typeSecretMessage();
+            });
+
+            closeModal.addEventListener('click', () => {
+                modalOverlay.classList.remove('active');
+            });
+
+            // 4. العداد
+            function startTimer() {
+                setInterval(() => {
+                    const now = new Date();
+                    const diff = now - START_DATE;
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const years = Math.floor(days / 365.25);
+                    const rDays = Math.floor(days % 365.25);
+                    const hours = new Date(diff).getUTCHours();
+                    const minutes = new Date(diff).getUTCMinutes();
+                    const seconds = new Date(diff).getUTCSeconds();
+                    
+                    document.getElementById('love-timer').innerHTML = 
+                        `<div style="font-size:16px;">بقالنا مع بعض</div>
+                         ${years} سنة، ${rDays} يوم، ${hours} س، ${minutes} د، ${seconds} ث`;
+                }, 1000);
+            }
+
+            // 5. الكتابة التلقائية
+            function typeWriter() {
+                let i = 0;
+                const elm = document.getElementById('typed-text');
+                function type() {
+                    if (i < TYPING_MESSAGE.length) {
+                        elm.textContent += TYPING_MESSAGE.charAt(i);
+                        i++;
+                        setTimeout(type, 40);
+                    }
+                }
+                type();
+            }
+
+            let secretIndex = 0;
+            function typeSecretMessage() {
+                secretIndex = 0;
+                const elm = document.getElementById('secret-typed-text');
+                function type() {
+                    if (secretIndex < SECRET_MESSAGE.length) {
+                        elm.textContent += SECRET_MESSAGE.charAt(secretIndex);
+                        secretIndex++;
+                        setTimeout(type, 40);
+                    } else {
+                        document.querySelector('.secret-cursor').style.display = 'none';
+                    }
+                }
+                type();
+            }
+
+            // 6. القلوب
+            function createHearts() {
+                const container = document.getElementById('heart-container');
+                const variants = ["💖", "مريومة", "ليلى", "أم ليلى", "ميرو", 
+        "Mariam", "Meryouma", "Laila", "Um Laila",
+        "My Love", "Queen", "Princess", "My Heart", "Beauty", "❤️", "My Love", "🥰", '💖', '💛', '🤍', '🧡', '💗', '🩷', '❤️'];
+                
+                setInterval(() => {
+                    const heart = document.createElement('span');
+                    heart.className = 'heart';
+                    heart.textContent = variants[Math.floor(Math.random() * variants.length)];
+                    heart.style.left = Math.random() * 90 + "%";
+                    heart.style.fontSize = (Math.random() * 20 + 40) + "px";
+                    heart.style.color = `hsl(${Math.random() * 360}, 100%, 75%)`;
+                    heart.style.animationDuration = (Math.random() * 3 + 4) + "s";
+                    container.appendChild(heart);
+                    setTimeout(() => heart.remove(), 7000);
+                }, 300);
+            }
+
+            // 7. تأثير التمرير
+            function setupScrollAnimation() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) entry.target.classList.add('visible');
+                    });
+                }, { threshold: 0.1 });
+                document.querySelectorAll('.section').forEach(s => observer.observe(s));
+            }
+        });
+    </script>
+</body>
+</html>
